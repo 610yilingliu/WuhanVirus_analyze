@@ -14,7 +14,7 @@ def standardlize(data, max, min):
 dict en_to_zhcn = {
     'Hubei': '湖北', 
     'Beijing': '北京',
-    Guangdong,78,0,0
+    'Guangdong': '广东',
     Shanghai,33,72,0
     Zhejiang,62,0,0
     Yunnan,11,58,0
