@@ -1,48 +1,85 @@
-from pyecharts import Map, Geo
+from pyecharts.charts import Map
+from pyecharts import options as opts
+
 import pandas as pd
 import numpy as np
 from math import log10
 
-raw_data = pd.read_csv('virus_data_1.26.csv')
-
 def standardlize(data, max, min):
-    rg = log10(max) - log10(min)
-    return log10(data)/rg
+    if data != 0:
+        return log10(data)/log10(max-min)
+    return 0
 
-
-
-dict en_to_zhcn = {
-    'Hubei': '湖北', 
+en_to_zhcn = {
+    'Hubei': '湖北',
     'Beijing': '北京',
     'Guangdong': '广东',
-    Shanghai,33,72,0
-    Zhejiang,62,0,0
-    Yunnan,11,58,0
-    Sichuan,28,4,0
-    Shandong,27,0,0
-    Guangxi,23,0,0
-    Guizhou,5,0,0
-    Anhui,39,4,0
-    Hainan,19,0,0
-    Ningxia,3,1,0
-    Jilin,4,0,0
-    Jiangxi,18,0,0
-    Tianjing,10,0,0
-    Henan,32,1,0
-    Chongqing,57,0,0
-    Shanxi,6,0,0
-    Heilongjiang,9,0,1
-    Hunan,43,0,0
-    Liaoning,16,0,0
-    Macau,2,0,0
-    Taiwan,3,0,0
-    Fujian,18,20,0
-    Hongkong,5,244,0
-    Hebei,8,0,1
-    Inner Mongolia,7,0,0
-    Jiangsu,18,0,0
-    Shanxi,15,0,0
-    Xinjiang,3,0,0
-    Gansu,4,0,0
-    Qinghai,1,0,0
+    'Shanghai': '上海',
+    'Zhejiang': '浙江',
+    'Yunnan': '云南',
+    'Sichuan': '四川',
+    'Shandong': '山东',
+    'Guangxi': '广西',
+    'Guizhou': '贵州',
+    'Anhui': '安徽',
+    'Hainan': '海南',
+    'Ningxia':'宁夏',
+    'Jilin':'吉林',
+    'Jiangxi':'江西',
+    'Tianjin':'天津',
+    'Henan':'河南',
+    'Chongqing': '重庆',
+    'Shanxi': '山西',
+    'Heilongjiang': '黑龙江',
+    'Hunan': '湖南',
+    'Liaoning':'辽宁',
+    'Macau':'澳门',
+    'Taiwan':'台湾',
+    'Fujian':'福建',
+    'Hongkong':'香港',
+    'Hebei': '河北',
+    'Inner Mongolia': '内蒙古',
+    'Jiangsu': '江苏',
+    'Shaanxi': '陕西',
+    'Xinjiang': '新疆',
+    'Gansu': '甘肃',
+    'Qinghai': '青海',
+    'Tibet':'西藏',
 }
+
+
+virus_data = pd.read_csv('virus_data_1.26.csv')
+
+# Translate to Chinese
+virus_data['Region_zhcn'] = virus_data['Region']
+for i in range(len(virus_data)):
+    virus_data['Region_zhcn'].replace(en_to_zhcn, inplace = True)
+
+name = list(virus_data['Region_zhcn'])
+infected_data = list(virus_data['Infected'])
+standardlized = []
+for i in range(len(infected_data)):
+    standardlized.append(standardlize(infected_data[i], max(infected_data), min(infected_data)))
+
+
+mapping = [[name[i], standardlized[i]] for i in range(len(name))]
+
+
+infected_map = Map()
+infected_map.set_series_opts(
+    label_opts=opts.LabelOpts(is_show=False),
+    )
+infected_map.set_global_opts(
+    title_opts=opts.TitleOpts(title="People infected from Wuhan Virus"),
+    visualmap_opts=opts.VisualMapOpts(
+        is_show = False,
+        max_= max(standardlized),
+        range_text=["max", "min"],
+        range_size= 1
+        ),
+    legend_opts=opts.LegendOpts(is_show = False),
+    )
+
+infected_map.add(" ", mapping, maptype = "china")
+infected_map.render_notebook()
+infected_map.render('map.html')
